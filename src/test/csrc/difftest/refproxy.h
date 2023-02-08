@@ -44,7 +44,7 @@ public:
   void (*ahead_memcpy)(paddr_t nemu_addr, void *dut_buf, size_t n, bool direction) = NULL;
   void (*ahead_regcpy)(void *dut, bool direction, bool restore, uint64_t restore_count) = NULL;
   void (*ahead_csrcpy)(void *dut, bool direction) = NULL;
-  void (*ahead_uarchstatus_cpy)(void *dut, bool direction) = NULL;
+  void (*ahead_uarchstatus_cpy)(void *dut, bool direction, uint64_t restore_count) = NULL;
   int (*ahead_store_commit)(uint64_t *saddr, uint64_t *sdata, uint8_t *smask) = NULL;
   void (*ahead_exec)(uint64_t n) = NULL;
   vaddr_t (*ahead_guided_exec)(void *disambiguate_para, uint64_t restore_count) = NULL;

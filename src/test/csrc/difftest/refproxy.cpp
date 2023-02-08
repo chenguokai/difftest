@@ -137,7 +137,7 @@ NemuProxy::NemuProxy(int coreid, size_t ram_size = 0) {
   ahead_csrcpy = (void (*)(void *, bool))dlsym(ahead_handle, "difftest_csrcpy");
   check_and_assert(ahead_csrcpy);
 
-  ahead_uarchstatus_cpy = (void (*)(void *, bool))dlsym(ahead_handle, "difftest_uarchstatus_cpy");
+  ahead_uarchstatus_cpy = (void (*)(void *, bool, uint64_t))dlsym(ahead_handle, "difftest_uarchstatus_cpy");
   check_and_assert(ahead_uarchstatus_cpy);
 
   ahead_exec = (void (*)(uint64_t))dlsym(ahead_handle, "difftest_exec");

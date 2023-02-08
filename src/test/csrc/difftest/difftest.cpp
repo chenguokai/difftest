@@ -267,6 +267,7 @@ void Difftest::do_instr_commit(int i) {
     struct SyncState sync;
     sync.lrscValid = dut.lrsc.success;
     proxy->uarchstatus_cpy((uint64_t*)&sync, DUT_TO_REF); // sync lr/sc microarchitectural regs
+    proxy->ahead_uarchstatus_cpy((uint64_t*)&sync, DUT_TO_REF, total_commit);
     // TODO: sync ahead proxy
     // clear SC instruction valid bit
     dut.lrsc.valid = 0;
