@@ -18,11 +18,13 @@ int reset =1;
 typedef struct branch_record {
   uint64_t pc;
   uint64_t target;
-  uint8_t type;
-  uint8_t taken;
+  int taken;
+  int type;
 } BR;
 
 BR *record;
+BR *record_orig;
+void* (*ahead_isa_query_br_log)() = NULL;
 
 inline void output_branch_record(BR rec, int idx) {
   printf("br[%d]: pc(0x%lx), target(0x%lx), type(%d), taken(%d)\n", idx, rec.pc, rec.target, rec.type, rec.taken);
@@ -53,9 +55,9 @@ void init_branch_record(const char *branch, const uint64_t rate) {
     return ;
   }
   // assert(branch != NULL);
-  record = (BR *)(malloc(MAX_BR_NUM * sizeof(BR)));
+  record_orig = (BR *)(malloc(MAX_BR_NUM * sizeof(BR)));
   // initiate the whole buffer to zero
-  memset((void *) record, 0, MAX_BR_NUM * sizeof(BR));
+  memset((void *) record_orig, 0, MAX_BR_NUM * sizeof(BR));
 
   ifstream fin(branch);
   printf("Use %s as the branch golden trace\n",branch);
@@ -72,13 +74,15 @@ void init_branch_record(const char *branch, const uint64_t rate) {
     string target = Trim(fields[3]);
     stringstream ss, ss1;
     ss << std::hex << pc;
-    ss >> record[idx].pc;
+    ss >> record_orig[idx].pc;
     ss1 << std::hex << target;
-    ss1 >> record[idx].target;
-    record[idx].taken = taken[0] - '0';
-    record[idx].type = type[0] - '0';
+    ss1 >> record_orig[idx].target;
+    record_orig[idx].taken = taken[0] - '0';
+    record_orig[idx].type = type[0] - '0';
     idx++;
   }
+
+  record = (BR *)ahead_isa_query_br_log();
 
   int miss_rate = rate;
   // default set to zero
@@ -99,7 +103,8 @@ void init_branch_record(const char *branch, const uint64_t rate) {
 }
 
 void free_branch_record(){
-  free(record);
+  // free(record);
+  // do not free array from so
 }
 
 // int main() {
@@ -149,6 +154,15 @@ extern "C" void branch_prediction_helper(
     uint64_t *redirectpc1, uint64_t *redirectpc2, uint64_t *redirectpc3, uint64_t *redirectpc4, uint64_t *redirectpc5, uint64_t *redirectpc6, uint64_t *redirectpc7, uint64_t *redirectpc8, 
     uint64_t *redirectpc9, uint64_t *redirectpc10, uint64_t *redirectpc11, uint64_t *redirectpc12, uint64_t *redirectpc13, uint64_t *redirectpc14, uint64_t *redirectpc15, uint64_t *redirectpc16
     ) {
+  static uint64_t last = 0, pre_last = 0;
+  if (rIdx - pre_last == 30) {
+    // consecutive miss
+    printf("Miss rIdx = %llu last = %llu\n", rIdx, last);
+    // exit(-1);
+  }
+  pre_last = last;
+  last = rIdx;
+
   if (reset) return;
 
   if (rIdx >= MAX_BR_NUM) {

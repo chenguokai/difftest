@@ -215,7 +215,7 @@ void Difftest::do_exception() {
   state->record_abnormal_inst(dut.event.exceptionPC, dut.event.exceptionInst, RET_EXC, dut.event.exception);
   if (dut.event.exception == 12 || dut.event.exception == 13 || dut.event.exception == 15) {
     // printf("exception cause: %d\n", dut.event.exception);
-    struct ExecutionGuide guide;
+    struct ExecutionGuide guide, ahead_guide;
     guide.force_raise_exception = true;
     guide.exception_num = dut.event.exception;
     guide.mtval = dut.csr.mtval;
@@ -223,7 +223,12 @@ void Difftest::do_exception() {
     guide.force_set_jump_target = false;
     proxy->guided_exec(&guide);
 
-    proxy->ahead_guided_exec(&guide, total_commit);
+    ahead_guide.force_raise_exception = true;
+    ahead_guide.exception_num = dut.event.exception;
+    ahead_guide.mtval = dut.csr.mtval;
+    ahead_guide.stval = dut.csr.stval;
+    ahead_guide.force_set_jump_target = false;
+    proxy->ahead_guided_exec(&ahead_guide, total_commit);
   } else {
   #ifdef DEBUG_MODE_DIFF
     if(DEBUG_MEM_REGION(true, dut.event.exceptionPC)){
@@ -232,6 +237,7 @@ void Difftest::do_exception() {
     }
   #endif
     proxy->exec(1);
+    proxy->ahead_exec(1);
   }
   progress = true;
 }
@@ -296,7 +302,7 @@ void Difftest::do_instr_commit(int i) {
   // single step exec
   proxy->exec(1);
   proxy->ahead_exec(1);
-  printf("intentionally ahead exec\n");
+  // printf("intentionally ahead exec\n");
   // when there's a fused instruction, let proxy execute one more instruction.
   if (dut.commit[i].fused) {
     proxy->exec(1);

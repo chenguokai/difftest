@@ -227,10 +227,6 @@ Emulator::Emulator(int argc, const char *argv[]):
   // init core
   reset_ncycles(10);
 
-  // init branch record for oracle bp
-  extern void init_branch_record(const char *br, const uint64_t rate);
-  init_branch_record(args.branch_record, args.branch_miss_rate);
-
   // init ram
   init_ram(args.image);
 #ifdef ENABLE_CHISEL_DB
@@ -361,6 +357,10 @@ uint64_t Emulator::execute(uint64_t max_cycle, uint64_t max_instr) {
   if(args.enable_runahead){
     runahead_init();
   }
+
+  // init branch record for oracle bp
+  extern void init_branch_record(const char *br, const uint64_t rate);
+  init_branch_record(args.branch_record, args.branch_miss_rate);
 
 #ifdef DEBUG_REFILL
   difftest[0]->save_track_instr(args.track_instr);

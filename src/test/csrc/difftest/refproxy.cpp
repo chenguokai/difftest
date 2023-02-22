@@ -20,6 +20,7 @@
 
 uint8_t* goldenMem = NULL;
 const char *difftest_ref_so = NULL;
+extern void* (*ahead_isa_query_br_log)();
 
 #define check_and_assert(func)                                \
   do {                                                        \
@@ -171,6 +172,8 @@ NemuProxy::NemuProxy(int coreid, size_t ram_size = 0) {
   check_and_assert(ahead_nemu_init);
 
   ahead_runahead_init = (void (*)(void))dlsym(ahead_handle, "difftest_runahead_init");
+
+  ahead_isa_query_br_log = (void *(*)(void))dlsym(ahead_handle, "difftest_query_br_log");
 
   ahead_nemu_init();
 
