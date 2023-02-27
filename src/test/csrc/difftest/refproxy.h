@@ -40,6 +40,7 @@ public:
   void (*load_flash_bin)(void *flash_bin, size_t size) = NULL;
   void (*set_ramsize)(size_t size) = NULL;
 
+#ifdef LIGHTQS
   // run ahead ones
   void (*ahead_memcpy)(paddr_t nemu_addr, void *dut_buf, size_t n, bool direction) = NULL;
   void (*ahead_regcpy)(void *dut, bool direction, bool restore, uint64_t restore_count) = NULL;
@@ -55,11 +56,12 @@ public:
   void (*ahead_debug_mem_sync)(paddr_t addr, void *bytes, size_t size) = NULL;
   void (*ahead_load_flash_bin)(void *flash_bin, size_t size) = NULL;
   void (*ahead_runahead_init)(void) = NULL;
-
+#endif // LIGHTQS
 };
 extern const char *difftest_ref_so;
 
 #define NEMU_ENV_VARIABLE "NEMU_HOME"
+#define AHEAD_ENV_VARIABLE "AHEAD_HOME"
 #define NEMU_SO_FILENAME  "build/riscv64-nemu-interpreter-so"
 class NemuProxy : public RefProxy {
 public:

@@ -50,6 +50,8 @@ string Trim(string& str)
 
 // reads branch records into global arrays
 void init_branch_record(const char *branch, const uint64_t rate) {
+  
+  #ifndef LIGHTQS
   if (branch == NULL) {
     printf("Branch trace file not provided, oracle branch should not work!\n");
     return ;
@@ -81,9 +83,11 @@ void init_branch_record(const char *branch, const uint64_t rate) {
     record_orig[idx].type = type[0] - '0';
     idx++;
   }
-
+  #endif // LIGHTQS
+  #ifdef LIGHTQS
   record = (BR *)ahead_isa_query_br_log();
-
+  #endif // LIGHTQS
+#ifndef LIGHTQS
   int miss_rate = rate;
   // default set to zero
   if (miss_rate < 0) miss_rate = 0;
@@ -99,6 +103,7 @@ void init_branch_record(const char *branch, const uint64_t rate) {
     }
   }
   printf("Branch miss rate is set to %d%%, totally %d predictions are reverted\n", miss_rate, num_reverted);
+#endif // LIGHTQS
   reset = 0;
 }
 

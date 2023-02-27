@@ -20,6 +20,7 @@
 
 uint8_t* goldenMem = NULL;
 const char *difftest_ref_so = NULL;
+const char *ahead_ref_so = NULL;
 extern void* (*ahead_isa_query_br_log)();
 
 #define check_and_assert(func)                                \
@@ -123,7 +124,19 @@ NemuProxy::NemuProxy(int coreid, size_t ram_size = 0) {
     free((void *)difftest_ref_so);
     difftest_ref_so = nullptr;
   }
-  void *ahead_handle = dlopen("/nfs/home/chenguokai/NEMU_ahead/NEMU/build/riscv64-nemu-interpreter-so", RTLD_LAZY | RTLD_DEEPBIND);
+  #ifdef LIGHTQS
+  const char *ahead_home = getenv(AHEAD_ENV_VARIABLE);
+  if (ahead_home == NULL) {
+    printf("FATAL: $(" AHEAD_ENV_VARIABLE ") is not defined!\n");
+    printf("Runahead cannot load, exiting\n");
+    exit(1);
+  }
+  const char *ahead_so = "/" NEMU_SO_FILENAME;
+  char *ahead_buf = (char *)malloc(strlen(ahead_home) + strlen(ahead_so) + 1);
+  strcpy(ahead_buf, ahead_home);
+  strcat(ahead_buf, ahead_so);
+  ahead_ref_so = ahead_buf;
+  void *ahead_handle = dlopen(ahead_ref_so, RTLD_LAZY | RTLD_DEEPBIND);
   if(!ahead_handle){
     printf("%s\n", dlerror());
     assert(0);
@@ -176,7 +189,7 @@ NemuProxy::NemuProxy(int coreid, size_t ram_size = 0) {
   ahead_isa_query_br_log = (void *(*)(void))dlsym(ahead_handle, "difftest_query_br_log");
 
   ahead_nemu_init();
-
+  #endif // LIGHTQS
 }
 
 void ref_misc_put_gmaddr(uint8_t* ptr) {
